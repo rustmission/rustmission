@@ -4,7 +4,7 @@ pub mod tabs;
 use ratatui::prelude::*;
 use ratatui::Frame;
 
-use crate::action::Action;
+use rm_shared::action::Action;
 pub use tabs::TabComponent;
 
 pub trait Component {

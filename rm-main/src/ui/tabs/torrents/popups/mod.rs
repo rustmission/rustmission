@@ -1,5 +1,6 @@
 use self::{files::FilesPopup, stats::StatisticsPopup};
-use crate::{action::Action, ui::components::Component};
+use crate::ui::components::Component;
+use rm_shared::action::Action;
 
 use ratatui::prelude::*;
 

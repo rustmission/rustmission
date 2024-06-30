@@ -2,11 +2,11 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::prelude::*;
 
 use crate::{
-    action::Action,
     app,
     transmission::TorrentAction,
     ui::{components::Component, tabs::torrents::input_manager::InputManager, to_input_request},
 };
+use rm_shared::{action::Action, status_task::StatusTask};
 
 pub struct AddMagnetBar {
     input_magnet_mgr: InputManager,
@@ -25,7 +25,7 @@ impl AddMagnetBar {
         Self {
             input_magnet_mgr: InputManager::new(
                 ctx.clone(),
-                "Add (Magnet URL/ Torrent path): ".to_string(),
+                "Add (Magnet URL / Torrent path): ".to_string(),
             ),
             input_location_mgr: InputManager::new_with_value(
                 ctx.clone(),
@@ -66,7 +66,9 @@ impl AddMagnetBar {
                 self.input_magnet_mgr.text(),
                 Some(self.input_location_mgr.text()),
             ));
-            return Some(Action::Quit);
+            return Some(Action::TaskPending(StatusTask::Add(
+                self.input_magnet_mgr.text(),
+            )));
         }
         if input.code == KeyCode::Esc {
             return Some(Action::Quit);

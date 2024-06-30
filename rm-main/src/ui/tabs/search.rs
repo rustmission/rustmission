@@ -15,7 +15,6 @@ use tokio::sync::mpsc::{self, UnboundedSender};
 use tui_input::Input;
 
 use crate::{
-    action::Action,
     app,
     transmission::TorrentAction,
     ui::{
@@ -24,6 +23,7 @@ use crate::{
     },
     utils::bytes_to_human_format,
 };
+use rm_shared::action::Action;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SearchFocus {

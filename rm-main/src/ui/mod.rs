@@ -2,16 +2,15 @@ pub mod components;
 pub mod global_popups;
 pub mod tabs;
 
-use crate::ui::tabs::torrents::TorrentsTab;
+use crate::ui::{global_popups::ErrorPopup, tabs::torrents::TorrentsTab};
 
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::prelude::*;
 use tui_input::InputRequest;
 
-use crate::{
-    action::Action,
-    app::{self},
-};
+use rm_shared::action::Action;
+
+use crate::app::{self};
 
 use self::{
     components::{tabs::CurrentTab, Component, TabComponent},
@@ -45,8 +44,9 @@ impl Component for MainWindow {
         use Action as A;
 
         match action {
-            A::Error(e_popup) => {
-                self.global_popup_manager.error_popup = Some(*e_popup);
+            A::Error(error) => {
+                let error_popup = ErrorPopup::new(&error.title, error.message);
+                self.global_popup_manager.error_popup = Some(error_popup);
                 Some(A::Render)
             }
             A::ShowHelp => self.global_popup_manager.handle_actions(action),

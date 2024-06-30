@@ -1,8 +1,10 @@
 use rm_config::Config;
+use rm_shared::action::event_to_action;
+use rm_shared::action::Action;
+use rm_shared::action::Mode;
 use std::sync::Arc;
 
 use crate::{
-    action::{event_to_action, Action, Mode},
     transmission::{self, TorrentAction},
     tui::Tui,
     ui::{components::Component, MainWindow},
@@ -44,9 +46,10 @@ impl Ctx {
                 });
             }
             Err(e) => {
-                let config_path = Config::get_config_path().to_str().unwrap();
+                let config_path = config.directories.main_path;
                 return Err(Error::msg(format!(
-                    "{e}\nIs the connection info in {config_path} correct?"
+                    "{e}\nIs the connection info in {:?} correct?",
+                    config_path
                 )));
             }
         }
@@ -114,7 +117,7 @@ impl App {
                 },
 
                 event = tui_event => {
-                    if let Some(action) = event_to_action(self.mode, event.unwrap()) {
+                    if let Some(action) = event_to_action(self.mode, event.unwrap(), &self.ctx.config.keybindings.keymap) {
                         if let Some(action) = self.update(action).await {
                             self.ctx.action_tx.send(action).unwrap();
                         }

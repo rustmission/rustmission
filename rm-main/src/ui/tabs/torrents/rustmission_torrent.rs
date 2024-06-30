@@ -20,6 +20,7 @@ pub struct RustmissionTorrent {
     status: TorrentStatus,
     pub style: Style,
     pub id: Id,
+    pub download_dir: String,
 }
 
 impl RustmissionTorrent {
@@ -32,6 +33,7 @@ impl RustmissionTorrent {
             Line::from(self.eta_secs.as_str()),
             Line::from(download_speed_format(&self.download_speed)),
             Line::from(upload_speed_format(&self.upload_speed)),
+            Line::from(self.download_dir.as_str()),
         ])
         .style(self.style)
     }
@@ -59,6 +61,7 @@ impl RustmissionTorrent {
             Line::from(self.eta_secs.as_str()),
             Line::from(download_speed_format(&self.download_speed)),
             Line::from(upload_speed_format(&self.upload_speed)),
+            Line::from(self.download_dir.as_str()),
         ])
     }
 
@@ -113,6 +116,11 @@ impl From<&Torrent> for RustmissionTorrent {
             _ => Style::default(),
         };
 
+        let download_dir = t
+            .download_dir
+            .clone()
+            .expect("torrent download directory requested");
+
         Self {
             torrent_name,
             size_when_done,
@@ -123,6 +131,7 @@ impl From<&Torrent> for RustmissionTorrent {
             status,
             style,
             id,
+            download_dir,
         }
     }
 }

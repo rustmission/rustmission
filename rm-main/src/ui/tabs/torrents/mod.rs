@@ -15,10 +15,10 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Row, Table};
 use transmission_rpc::types::TorrentStatus;
 
-use crate::action::Action;
 use crate::ui::components::table::GenericTable;
 use crate::ui::components::Component;
 use crate::{app, transmission};
+use rm_shared::action::Action;
 
 use self::bottom_stats::BottomStats;
 use self::popups::files::FilesPopup;

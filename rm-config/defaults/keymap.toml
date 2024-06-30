@@ -1,0 +1,47 @@
+[general]
+keybindings = [
+  { on = "?", action = "ShowHelp" },
+  { on = "F1", action = "ShowHelp" },
+
+  { on = "q", action = "Quit" },
+  { on = "Esc", action = "Close" },
+  { on = "Enter", action = "Confirm" },
+  { on = " ", action = "Select" },
+  { on = "Tab", action = "SwitchFocus" },
+  { on = "/", action = "Search" },
+  
+  { on = "1", action = "SwitchToTorrents" },
+  { on = "2", action = "SwitchToSearch" },
+
+  { on = "Home", action = "GoToBeginning" },
+  { on = "End", action = "GoToEnd" },
+  { on = "PageUp", action = "ScrollPageUp" },
+  { on = "PageDown", action = "ScrollPageDown" },
+
+  { modifier = "Ctrl", on = "u", action = "ScrollPageUp" },
+  { modifier = "Ctrl", on = "d", action = "ScrollPageDown" },
+
+  # Arrows
+  { on = "Left", action = "Left" },
+  { on = "Right", action = "Right" },
+  { on = "Up", action = "Up"},
+  { on = "Down", action = "Down" },
+
+  # Vi
+  { on = "h", action = "Left" },
+  { on = "l", action = "Right" },
+  { on = "k", action = "Up" },
+  { on = "j", action = "Down" },
+]
+
+[torrents_tab]
+keybindings = [
+  { on = "a", action = "AddMagnet" },
+  { on = "m", action = "MoveTorrent" },
+  { on = "p", action = "Pause" },
+  { on = "f", action = "ShowFiles" },
+  { on = "s", action = "ShowStats" },
+
+  { on = "d", action = "DeleteWithoutFiles" },
+  { on = "D", action = "DeleteWithFiles" },
+]

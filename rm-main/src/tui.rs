@@ -1,9 +1,9 @@
-use std::time::Duration;
+use std::{io, time::Duration};
 
 use anyhow::Result;
 use crossterm::{
     cursor,
-    event::{Event as CrosstermEvent, KeyEvent, KeyEventKind},
+    event::{Event, KeyEventKind},
     terminal::{EnterAlternateScreen, LeaveAlternateScreen},
 };
 use futures::{FutureExt, StreamExt};
@@ -14,17 +14,9 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
-#[derive(Clone, Debug)]
-pub enum Event {
-    Quit,
-    Error,
-    Render,
-    Key(KeyEvent),
-}
-
 pub struct Tui {
     pub terminal: ratatui::Terminal<Backend<std::io::Stdout>>,
-    pub task: JoinHandle<()>,
+    pub task: JoinHandle<Result<()>>,
     pub cancellation_token: CancellationToken,
     pub event_rx: UnboundedReceiver<Event>,
     pub event_tx: UnboundedSender<Event>,
@@ -35,7 +27,7 @@ impl Tui {
         let terminal = ratatui::Terminal::new(Backend::new(std::io::stdout()))?;
         let (event_tx, event_rx) = mpsc::unbounded_channel();
         let cancellation_token = CancellationToken::new();
-        let task = tokio::spawn(async {});
+        let task = tokio::spawn(async { Ok(()) });
         Ok(Self {
             terminal,
             task,
@@ -45,7 +37,7 @@ impl Tui {
         })
     }
 
-    pub fn start(&mut self) {
+    pub fn start(&mut self) -> Result<()> {
         self.cancel();
         self.cancellation_token = CancellationToken::new();
         let cancellation_token = self.cancellation_token.clone();
@@ -57,26 +49,29 @@ impl Tui {
                 let crossterm_event = reader.next().fuse();
                 tokio::select! {
                   _ = cancellation_token.cancelled() => break,
-                  event = crossterm_event => Self::handle_crossterm_event(event, &event_tx),
+                  event = crossterm_event => Self::handle_crossterm_event::<io::Error>(event, &event_tx)?,
                 }
             }
+            Ok(())
         });
+        Ok(())
     }
 
     fn handle_crossterm_event<T>(
-        event: Option<Result<CrosstermEvent, T>>,
+        event: Option<Result<Event, io::Error>>,
         event_tx: &UnboundedSender<Event>,
-    ) {
+    ) -> Result<()> {
         match event {
-            Some(Ok(CrosstermEvent::Key(key))) => {
+            Some(Ok(Event::Key(key))) => {
                 if key.kind == KeyEventKind::Press {
                     event_tx.send(Event::Key(key)).unwrap();
                 }
             }
-            Some(Ok(CrosstermEvent::Resize(_, _))) => event_tx.send(Event::Render).unwrap(),
-            Some(Err(_)) => event_tx.send(Event::Error).unwrap(),
+            Some(Ok(Event::Resize(x, y))) => event_tx.send(Event::Resize(x, y)).unwrap(),
+            Some(Err(e)) => Err(e)?,
             _ => (),
         }
+        Ok(())
     }
 
     pub(crate) fn stop(&self) {
@@ -97,7 +92,7 @@ impl Tui {
     pub(crate) fn enter(&mut self) -> Result<()> {
         crossterm::terminal::enable_raw_mode()?;
         crossterm::execute!(std::io::stdout(), EnterAlternateScreen, cursor::Hide)?;
-        self.start();
+        self.start()?;
         Ok(())
     }
 

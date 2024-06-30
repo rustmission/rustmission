@@ -15,11 +15,11 @@ use transmission_rpc::types::{Id, Torrent, TorrentSetArgs};
 use tui_tree_widget::{Tree, TreeItem, TreeState};
 
 use crate::{
-    action::Action,
     app,
     transmission::TorrentAction,
     ui::{centered_rect, components::Component},
 };
+use rm_shared::action::Action;
 
 pub struct FilesPopup {
     ctx: app::Ctx,
@@ -111,7 +111,7 @@ impl Component for FilesPopup {
                 Some(A::Render)
             }
             (A::Confirm, CurrentFocus::CloseButton) => Some(A::Quit),
-            (A::Space | A::Confirm, CurrentFocus::Files) => {
+            (A::Select | A::Confirm, CurrentFocus::Files) => {
                 if let Some(torrent) = &mut *self.torrent.lock().unwrap() {
                     let wanted_ids = torrent.wanted.as_mut().unwrap();
 

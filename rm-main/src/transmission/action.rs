@@ -5,7 +5,9 @@ use transmission_rpc::types::{
     Id, SessionGet, Torrent, TorrentAction as RPCAction, TorrentAddArgs, TorrentSetArgs,
 };
 
-use crate::{action::Action, app, ui::global_popups::ErrorPopup};
+use crate::app;
+use rm_shared::action::Action;
+use rm_shared::action::ErrorMessage;
 
 #[derive(Debug)]
 pub enum TorrentAction {
@@ -18,6 +20,8 @@ pub enum TorrentAction {
     GetTorrentInfo(Id, Arc<Mutex<Option<Torrent>>>),
     GetSessionGet(oneshot::Sender<SessionGet>),
     SetArgs(Box<TorrentSetArgs>, Option<Vec<Id>>),
+    // Torrent ID, Directory to move to
+    Move(Vec<Id>, String),
 }
 
 // TODO: make all the options use the same type of interface. Probably use a sender everywhere
@@ -25,20 +29,34 @@ pub async fn action_handler(ctx: app::Ctx, mut trans_rx: UnboundedReceiver<Torre
     while let Some(action) = trans_rx.recv().await {
         match action {
             TorrentAction::Add(ref url, directory) => {
+                let formatted = {
+                    if url.starts_with("www") {
+                        format!("https://{url}")
+                    } else {
+                        url.to_string()
+                    }
+                };
                 let args = TorrentAddArgs {
-                    filename: Some(url.clone()),
+                    filename: Some(formatted),
                     download_dir: directory,
                     ..Default::default()
                 };
-
-                if let Err(e) = ctx.client.lock().await.torrent_add(args).await {
-                    let error_title = "Failed to add a torrent";
-                    let msg = "Failed to add torrent with URL/Path:\n\"".to_owned()
-                        + url
-                        + "\"\n"
-                        + &e.to_string();
-                    let error_popup = Box::new(ErrorPopup::new(error_title, msg));
-                    ctx.send_action(Action::Error(error_popup));
+                match ctx.client.lock().await.torrent_add(args).await {
+                    Ok(_) => {
+                        ctx.send_action(Action::TaskSuccess);
+                    }
+                    Err(e) => {
+                        let error_title = "Failed to add a torrent";
+                        let msg = "Failed to add torrent with URL/Path:\n\"".to_owned()
+                            + url
+                            + "\"\n"
+                            + &e.to_string();
+                        let error_message = ErrorMessage {
+                            title: error_title.to_string(),
+                            message: msg,
+                        };
+                        ctx.send_action(Action::Error(Box::new(error_message)));
+                    }
                 }
             }
             TorrentAction::Stop(ids) => {
@@ -64,6 +82,7 @@ pub async fn action_handler(ctx: app::Ctx, mut trans_rx: UnboundedReceiver<Torre
                     .torrent_remove(ids, true)
                     .await
                     .unwrap();
+                ctx.send_action(Action::TaskSuccess)
             }
             TorrentAction::DeleteWithoutFiles(ids) => {
                 ctx.client
@@ -72,6 +91,7 @@ pub async fn action_handler(ctx: app::Ctx, mut trans_rx: UnboundedReceiver<Torre
                     .torrent_remove(ids, false)
                     .await
                     .unwrap();
+                ctx.send_action(Action::TaskSuccess)
             }
             TorrentAction::GetTorrentInfo(id, torrent_info) => {
                 let new_torrent_info = ctx
@@ -105,6 +125,26 @@ pub async fn action_handler(ctx: app::Ctx, mut trans_rx: UnboundedReceiver<Torre
                     .unwrap()
                     .arguments;
                 sender.send(session_get).unwrap();
+            }
+            TorrentAction::Move(ids, new_directory) => {
+                if let Err(e) = ctx
+                    .client
+                    .lock()
+                    .await
+                    .torrent_set_location(ids, new_directory.clone(), Option::from(true))
+                    .await
+                {
+                    let error_title = "Failed to move torrent";
+                    let msg = "Failed to move torrent to new directory:\n\"".to_owned()
+                        + new_directory.as_str()
+                        + "\"\n"
+                        + &e.to_string();
+                    let error_message = ErrorMessage {
+                        title: error_title.to_string(),
+                        message: msg,
+                    };
+                    ctx.send_action(Action::Error(Box::new(error_message)));
+                }
             }
         }
     }

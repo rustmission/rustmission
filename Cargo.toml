@@ -15,6 +15,7 @@ license = "GPL-3.0-or-later"
 
 [workspace.dependencies]
 rm-config = { version = "0.3", path = "rm-config" }
+rm-shared = { version = "0.3", path = "rm-shared" }
 
 magnetease = "0.1"
 anyhow = "1"
@@ -24,8 +25,12 @@ fuzzy-matcher = "0.3.7"
 clap = { version = "4.5.6", features = ["derive"] }
 base64 = "0.22"
 xdg = "2.5"
-url = "2.5"
+url = { version = "2.5", features = ["serde"] }
 toml = "0.8"
+rss = "2"
+reqwest = "0.12"
+regex = "1"
+thiserror = "1"
 
 # Async
 tokio = { version = "1", features = ["macros", "sync"] }
@@ -33,7 +38,7 @@ tokio-util = "0.7"
 futures = "0.3"
 
 # TUI
-crossterm = { version = "0.27", features = ["event-stream"] }
+crossterm = { version = "0.27", features = ["event-stream", "serde"] }
 ratatui = { version = "0.26", features = ["serde"] }
 tui-input = "0.8"
 tui-tree-widget = "0.20"
