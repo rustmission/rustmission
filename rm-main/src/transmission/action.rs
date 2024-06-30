@@ -5,7 +5,9 @@ use transmission_rpc::types::{
     Id, SessionGet, Torrent, TorrentAction as RPCAction, TorrentAddArgs, TorrentSetArgs,
 };
 
-use crate::{action::Action, app, ui::global_popups::ErrorPopup};
+use crate::app;
+use rm_shared::action::Action;
+use rm_shared::action::ErrorMessage;
 
 #[derive(Debug)]
 pub enum TorrentAction {
@@ -37,8 +39,11 @@ pub async fn action_handler(ctx: app::Ctx, mut trans_rx: UnboundedReceiver<Torre
                         + url
                         + "\"\n"
                         + &e.to_string();
-                    let error_popup = Box::new(ErrorPopup::new(error_title, msg));
-                    ctx.send_action(Action::Error(error_popup));
+                    let error_message = ErrorMessage {
+                        title: error_title.to_string(),
+                        message: msg,
+                    };
+                    ctx.send_action(Action::Error(Box::new(error_message)));
                 }
             }
             TorrentAction::Stop(ids) => {

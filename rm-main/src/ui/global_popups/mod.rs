@@ -6,7 +6,8 @@ use ratatui::prelude::*;
 pub use error::ErrorPopup;
 pub use help::HelpPopup;
 
-use crate::{action::Action, app};
+use crate::app;
+use rm_shared::action::Action;
 
 use super::components::Component;
 

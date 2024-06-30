@@ -1,4 +1,5 @@
-use crate::{action::Action, app};
+use crate::app;
+use rm_shared::action::Action;
 
 use super::Component;
 use ratatui::{layout::Flex, prelude::*, widgets::Tabs};

@@ -1,5 +1,6 @@
 use ratatui::{
     prelude::*,
+    style::Styled,
     widgets::{
         block::{Position, Title},
         Block, BorderType, Clear, Paragraph,
@@ -8,11 +9,11 @@ use ratatui::{
 use transmission_rpc::types::SessionStats;
 
 use crate::{
-    action::Action,
     app,
     ui::{centered_rect, components::Component},
     utils::bytes_to_human_format,
 };
+use rm_shared::action::Action;
 
 pub struct StatisticsPopup {
     stats: SessionStats,
@@ -30,15 +31,15 @@ impl Component for StatisticsPopup {
         use Action as A;
         match action {
             _ if action.is_soft_quit() => Some(action),
-            A::Confirm => Some(Action::SoftQuit),
+            A::Confirm => Some(Action::Close),
             _ => None,
         }
     }
 
     fn render(&mut self, f: &mut Frame, rect: Rect) {
         let popup_rect = centered_rect(rect, 50, 50);
-        let block_rect = popup_rect.inner(&Margin::new(1, 1));
-        let text_rect = block_rect.inner(&Margin::new(3, 2));
+        let block_rect = popup_rect.inner(Margin::new(1, 1));
+        let text_rect = block_rect.inner(Margin::new(3, 2));
 
         let title_style = Style::default().fg(self.ctx.config.general.accent_color);
         let block = Block::bordered()

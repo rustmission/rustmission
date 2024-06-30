@@ -4,7 +4,8 @@ use ratatui::{
 };
 use tui_input::{Input, InputRequest};
 
-use crate::{action::Action, app, ui::components::Component};
+use crate::{app, ui::components::Component};
+use rm_shared::action::Action;
 
 pub struct InputManager {
     input: Input,

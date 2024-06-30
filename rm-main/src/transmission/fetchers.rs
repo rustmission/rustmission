@@ -6,10 +6,10 @@ use std::{
 use transmission_rpc::types::{FreeSpace, SessionStats, TorrentGetField};
 
 use crate::{
-    action::Action,
     app,
     ui::tabs::torrents::{rustmission_torrent::RustmissionTorrent, table_manager::TableManager},
 };
+use rm_shared::action::Action;
 
 pub async fn stats(ctx: app::Ctx, stats: Arc<Mutex<Option<SessionStats>>>) {
     loop {

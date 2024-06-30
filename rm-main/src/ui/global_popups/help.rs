@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use ratatui::{
     prelude::*,
     widgets::{
@@ -7,10 +9,11 @@ use ratatui::{
 };
 
 use crate::{
-    action::Action,
     app,
     ui::{centered_rect, components::Component},
 };
+use rm_config::keymap::{actions::UserAction, Keybinding};
+use rm_shared::action::Action;
 
 macro_rules! add_line {
     ($lines:expr, $key:expr, $description:expr) => {
@@ -30,21 +33,39 @@ impl HelpPopup {
     pub const fn new(ctx: app::Ctx) -> Self {
         Self { ctx }
     }
+
+    fn write_keybindings<T: Into<Action> + UserAction + Ord>(
+        keybindings: &[Keybinding<T>],
+        lines: &mut Vec<Line>,
+    ) {
+        let mut keys = BTreeMap::new();
+
+        for keybinding in keybindings {
+            keys.entry(&keybinding.action)
+                .or_insert_with(Vec::new)
+                .push(keybinding.keycode_string());
+        }
+
+        for (action, keycodes) in keys {
+            let keycode_string = keycodes.join(" / ");
+            add_line!(lines, keycode_string, action.desc());
+        }
+    }
 }
 
 impl Component for HelpPopup {
     fn handle_actions(&mut self, action: Action) -> Option<Action> {
         match action {
-            action if action.is_soft_quit() => Some(Action::SoftQuit),
-            Action::Confirm | Action::ShowHelp => Some(Action::SoftQuit),
+            action if action.is_soft_quit() => Some(Action::Close),
+            Action::Confirm | Action::ShowHelp => Some(Action::Close),
             _ => None,
         }
     }
 
     fn render(&mut self, f: &mut Frame, rect: Rect) {
         let centered_rect = centered_rect(rect, 75, 75);
-        let popup_rect = centered_rect.inner(&Margin::new(1, 1));
-        let text_rect = popup_rect.inner(&Margin::new(3, 2));
+        let popup_rect = centered_rect.inner(Margin::new(1, 1));
+        let text_rect = popup_rect.inner(Margin::new(3, 2));
 
         let title_style = Style::new().fg(self.ctx.config.general.accent_color);
         let block = Block::bordered()
@@ -67,22 +88,7 @@ impl Component for HelpPopup {
         )])
         .centered()];
 
-        add_line!(lines, "? / F1", "show/hide help");
-        add_line!(lines, "q", "quit Rustmission / a popup");
-        add_line!(lines, "ESC", "close a popup / task");
-        add_line!(lines, "1", "switch to torrents tab");
-        add_line!(lines, "2", "switch to search tab");
-        add_line!(lines, "h / ←", "switch to tab left of current tab");
-        add_line!(lines, "l / →", "switch to tab right of current tab");
-        add_line!(lines, "j / ↓", "move down");
-        add_line!(lines, "k / ↑", "move up");
-        add_line!(lines, "/", "search or filter");
-        add_line!(lines, "TAB", "switch focus");
-        add_line!(lines, "Enter", "confirm");
-        add_line!(lines, "CTRL-d", "scroll page down");
-        add_line!(lines, "CTRL-u", "scroll page up");
-        add_line!(lines, "Home", "scroll to the beginning");
-        add_line!(lines, "End", "scroll to the end");
+        Self::write_keybindings(&self.ctx.config.keybindings.general.keybindings, &mut lines);
 
         lines.push(
             Line::from(vec![Span::styled(
@@ -92,12 +98,10 @@ impl Component for HelpPopup {
             .centered(),
         );
 
-        add_line!(lines, "a", "add a magnet url");
-        add_line!(lines, "p", "pause/unpause a torrent");
-        add_line!(lines, "d", "delete a torrent without files");
-        add_line!(lines, "D", "delete a torrent with files");
-        add_line!(lines, "f", "show files of a torrent");
-        add_line!(lines, "s", "show statistics");
+        Self::write_keybindings(
+            &self.ctx.config.keybindings.torrents_tab.keybindings,
+            &mut lines,
+        );
 
         let help_text = Text::from(lines);
         let help_paragraph = Paragraph::new(help_text);

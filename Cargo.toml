@@ -15,17 +15,19 @@ license = "GPL-3.0-or-later"
 
 [workspace.dependencies]
 rm-config = { version = "0.3", path = "rm-config" }
+rm-shared = { version = "0.3", path = "rm-shared" }
 
 magnetease = "0.1"
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 transmission-rpc = "0.4.2"
 fuzzy-matcher = "0.3.7"
-clap = { version = "4.5.6", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
 base64 = "0.22"
 xdg = "2.5"
-url = "2.5"
+url = { version = "2.5", features = ["serde"] }
 toml = "0.8"
+thiserror = "1"
 
 # Async
 tokio = { version = "1", features = ["macros", "sync"] }
@@ -33,11 +35,11 @@ tokio-util = "0.7"
 futures = "0.3"
 
 # TUI
-crossterm = { version = "0.27", features = ["event-stream"] }
-ratatui = { version = "0.26", features = ["serde"] }
-tui-input = "0.8"
-tui-tree-widget = "0.20"
-throbber-widgets-tui = "0.5.0"
+crossterm = { version = "0.27", features = ["event-stream", "serde"] }
+ratatui = { version = "0.27", features = ["serde"] }
+tui-input = "0.9"
+tui-tree-widget = "0.21"
+throbber-widgets-tui = "0.6.0"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

@@ -1,4 +1,3 @@
-mod action;
 pub mod app;
 mod cli;
 pub mod transmission;

@@ -2,7 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use ratatui::prelude::*;
 
-use crate::{action::Action, app, ui::components::Component};
+use crate::{app, ui::components::Component};
+use rm_shared::action::Action;
 
 use super::{
     tasks::{

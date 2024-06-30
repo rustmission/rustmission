@@ -4,7 +4,6 @@ use crossterm::event::KeyCode;
 use ratatui::prelude::*;
 
 use crate::{
-    action::Action,
     app,
     ui::{
         components::Component,
@@ -12,6 +11,7 @@ use crate::{
         to_input_request,
     },
 };
+use rm_shared::action::Action;
 
 pub struct FilterBar {
     input: InputManager,

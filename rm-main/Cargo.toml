@@ -15,6 +15,7 @@ path = "src/main.rs"
 
 [dependencies]
 rm-config.workspace = true
+rm-shared.workspace = true
 magnetease.workspace = true
 anyhow.workspace = true
 serde.workspace = true

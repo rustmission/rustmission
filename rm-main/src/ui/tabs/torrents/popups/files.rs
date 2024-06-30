@@ -6,6 +6,7 @@ use std::{
 
 use ratatui::{
     prelude::*,
+    style::Styled,
     widgets::{
         block::{Position, Title},
         Block, BorderType, Clear, Paragraph,
@@ -15,11 +16,11 @@ use transmission_rpc::types::{Id, Torrent, TorrentSetArgs};
 use tui_tree_widget::{Tree, TreeItem, TreeState};
 
 use crate::{
-    action::Action,
     app,
     transmission::TorrentAction,
     ui::{centered_rect, components::Component},
 };
+use rm_shared::action::Action;
 
 pub struct FilesPopup {
     ctx: app::Ctx,
@@ -111,7 +112,7 @@ impl Component for FilesPopup {
                 Some(A::Render)
             }
             (A::Confirm, CurrentFocus::CloseButton) => Some(A::Quit),
-            (A::Space | A::Confirm, CurrentFocus::Files) => {
+            (A::Select | A::Confirm, CurrentFocus::Files) => {
                 if let Some(torrent) = &mut *self.torrent.lock().unwrap() {
                     let wanted_ids = torrent.wanted.as_mut().unwrap();
 
@@ -196,9 +197,9 @@ impl Component for FilesPopup {
 
     fn render(&mut self, f: &mut Frame, rect: Rect) {
         let popup_rect = centered_rect(rect, 75, 75);
-        let block_rect = popup_rect.inner(&Margin::new(1, 0));
+        let block_rect = popup_rect.inner(Margin::new(1, 0));
 
-        let info_text_rect = block_rect.inner(&Margin::new(3, 2));
+        let info_text_rect = block_rect.inner(Margin::new(3, 2));
 
         let highlight_style = Style::default().fg(self.ctx.config.general.accent_color);
         let bold_highlight_style = highlight_style.on_black().bold();
