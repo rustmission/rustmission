@@ -1,5 +1,5 @@
 use ratatui::{
-    style::{Style, Stylize},
+    style::{Style, Styled, Stylize},
     text::{Line, Span},
     widgets::Row,
 };
@@ -19,21 +19,22 @@ pub struct RustmissionTorrent {
     pub upload_speed: String,
     status: TorrentStatus,
     pub style: Style,
+    pub icon_style: Style,
     pub id: Id,
 }
 
 impl RustmissionTorrent {
     pub fn to_row(&self) -> ratatui::widgets::Row {
         Row::new([
-            Line::from(self.torrent_name.as_str()),
+            Line::from(self.status_icon()).set_style(self.icon_style),
+            Line::from(self.torrent_name.as_str()).set_style(self.style),
             Line::from(""),
-            Line::from(self.size_when_done.as_str()),
-            Line::from(self.progress.as_str()),
-            Line::from(self.eta_secs.as_str()),
-            Line::from(download_speed_format(&self.download_speed)),
-            Line::from(upload_speed_format(&self.upload_speed)),
+            Line::from(self.size_when_done.as_str()).set_style(self.style),
+            Line::from(self.progress.as_str()).set_style(self.style),
+            Line::from(self.eta_secs.as_str()).set_style(self.style),
+            Line::from(download_speed_format(&self.download_speed)).set_style(self.style),
+            Line::from(upload_speed_format(&self.upload_speed)).set_style(self.style),
         ])
-        .style(self.style)
     }
 
     pub fn to_row_with_higlighted_indices(
@@ -51,8 +52,11 @@ impl RustmissionTorrent {
             }
         }
 
+        let icon_line = Line::from(self.status_icon()).set_style(self.icon_style);
+
         Row::new([
-            Line::from(torrent_name_line),
+            icon_line,
+            torrent_name_line,
             Line::from(""),
             Line::from(self.size_when_done.as_str()),
             Line::from(self.progress.as_str()),
@@ -74,6 +78,19 @@ impl RustmissionTorrent {
         }
 
         self.status = new_status;
+    }
+
+    fn status_icon(&self) -> &str {
+        // ▼
+        match self.status() {
+            TorrentStatus::Stopped => "⏸",
+            TorrentStatus::Verifying => "↺",
+            TorrentStatus::Seeding => "▲",
+            TorrentStatus::Downloading => "▼",
+            TorrentStatus::QueuedToSeed => "",
+            TorrentStatus::QueuedToVerify => "",
+            TorrentStatus::QueuedToDownload => "",
+        }
     }
 }
 
@@ -113,6 +130,13 @@ impl From<&Torrent> for RustmissionTorrent {
             _ => Style::default(),
         };
 
+        let icon_style = match status {
+            TorrentStatus::Stopped => Style::default().dark_gray(),
+            TorrentStatus::Seeding => Style::default().blue(),
+            TorrentStatus::Downloading => Style::default().green(),
+            _ => Style::default(),
+        };
+
         Self {
             torrent_name,
             size_when_done,
@@ -122,6 +146,7 @@ impl From<&Torrent> for RustmissionTorrent {
             upload_speed,
             status,
             style,
+            icon_style,
             id,
         }
     }
